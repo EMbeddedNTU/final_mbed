@@ -27,6 +27,11 @@ target_sources(${APP_TARGET}
         source/main.cpp
 )
 
+target_precompile_headers(${APP_TARGET}
+    PRIVATE
+        source/pch.h
+)
+
 target_link_libraries(${APP_TARGET}
     PRIVATE
         mbed-os

@@ -1,8 +1,10 @@
+#include "pch.h"
 #include "socket.h"
 #include "mbed-trace/mbed_trace.h"
 #include "wifi_helper.h"
 
 namespace GSH {
+
     bool Socket::init() 
     {
         if (!m_Net) 
@@ -66,7 +68,7 @@ namespace GSH {
 
         for (int i = 0; i < result; i++) 
         {
-            printf("Network: %s secured: %s BSSID: %hhX:%hhX:%hhX:%hhx:%hhx:%hhx "
+            GSH_INFO("Network: %s secured: %s BSSID: %hhX:%hhX:%hhX:%hhx:%hhx:%hhx "
                     "RSSI: %hhd Ch: %hhd\r\n",
                     ap[i].get_ssid(), get_security_string(ap[i].get_security()),
                     ap[i].get_bssid()[0], ap[i].get_bssid()[1], ap[i].get_bssid()[2],
@@ -83,7 +85,7 @@ namespace GSH {
         result = m_Socket->send(json, len);
         while (0 >= result) 
         {
-            printf("Error seding: %d\n", result);
+            GSH_ERROR("Error seding: %d\n", result);
             socket_connect();
             wait_us(5 * SECONDS);
             result = m_Socket->send(json, len);
@@ -113,7 +115,7 @@ namespace GSH {
 
         /* the message is likely larger but we only want the HTTP response code */
 
-        printf("received %d bytes:\r\n%.*s\r\n\r\n", received_bytes, strstr(buffer, "\n") - buffer, buffer);
+        GSH_INFO("received %d bytes:\r\n%.*s\r\n\r\n", received_bytes, strstr(buffer, "\n") - buffer, buffer);
 
         return true;
     }
@@ -123,14 +125,19 @@ namespace GSH {
         nsapi_size_or_error_t result;
         result = m_Net->connect();
         int retry_count = 0;
-        while (result != 0 && retry_count < MAX_WIFI_RETRY_COUNT) 
+        while (result != 0) 
         {
+            if (retry_count > MAX_WIFI_RETRY_COUNT) 
+            {
+                GSH_WARN("wifi_connect reach maximum retry count");
+                return false;
+            }
             retry_count++;
-            printf("Error! wifi_connect() returned: %d\r\n", result);
+            GSH_WARN("wifi_connect() returned: %d\r\n", result);
             wait_us(SECONDS);
             result = m_Net->connect();
         }
-        return result == 0;
+        return true;
     }
 
     void Socket::print_network_info() 
@@ -138,11 +145,11 @@ namespace GSH {
         /* print the network info */
         SocketAddress a;
         m_Net->get_ip_address(&a);
-        printf("IP address: %s\r\n", a.get_ip_address() ? a.get_ip_address() : "None");
+        GSH_INFO("IP address: %s\r\n", a.get_ip_address() ? a.get_ip_address() : "None");
         m_Net->get_netmask(&a);
-        printf("Netmask: %s\r\n", a.get_ip_address() ? a.get_ip_address() : "None");
+        GSH_INFO("Netmask: %s\r\n", a.get_ip_address() ? a.get_ip_address() : "None");
         m_Net->get_gateway(&a);
-        printf("Gateway: %s\r\n", a.get_ip_address() ? a.get_ip_address() : "None");
+        GSH_INFO("Gateway: %s\r\n", a.get_ip_address() ? a.get_ip_address() : "None");
     }
 
     bool Socket::socket_open()
@@ -154,10 +161,11 @@ namespace GSH {
         {
             if(retry_count > MAX_OPEN_RETRY_COUNT)
             {
+                GSH_WARN("socket_open() reach maximum retry count");
                 return false;
             }
             retry_count++;
-            printf("Error! socket_open() returned: %d\r\n", result);
+            GSH_WARN("socket_open() returned: %d\r\n", result);
             socket_restart();
             wait_us(5 * SECONDS);
             result = m_Socket->open(m_Net);
@@ -172,7 +180,7 @@ namespace GSH {
         {
             if (retry_count > MAX_HOST_RESOLVE_RETRY_COUNT)
             {
-                // TODO: logger
+                GSH_WARN("address_initialize reach maximum retry count");
                 return false;
             }
             wait_us(SECONDS);
@@ -214,8 +222,11 @@ namespace GSH {
                 return false;
             }
             retry_count++;
-            printf("Error! _socket.connect() returned: %d\r\n", result);
-            socket_open();
+            GSH_WARN("socket_connect() returned: %d\r\n", result);
+            if(!socket_open()) 
+            {
+                return false;
+            }
             wait_us(5 * SECONDS);
             result = m_Socket->connect(*m_Address);
         }

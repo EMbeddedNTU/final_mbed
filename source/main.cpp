@@ -1,11 +1,10 @@
+#include "pch.h"
 #include "mbed-trace/mbed_trace.h"
 #include "wifi_helper.h"
 #include "socket.h"
 
 
 int main() {
-    printf("\r\nStarting socket demo\r\n\r\n");
-
     constexpr int SECONDS = 1000000;
 
 #ifdef MBED_CONF_MBED_TRACE_ENABLE

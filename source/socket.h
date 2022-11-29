@@ -18,7 +18,8 @@ namespace GSH {
         Socket() : m_Net(NetworkInterface::get_default_instance()) {}
 
         ~Socket() {
-            if (m_Net) {
+            if (m_Net) 
+            {
                 m_Net->disconnect();
             }
         }
