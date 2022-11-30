@@ -9,10 +9,10 @@ namespace GSH {
         static constexpr size_t REMOTE_PORT = 5555;
         static constexpr int SECONDS = 1000000;
 
-        static constexpr int MAX_WIFI_RETRY_COUNT = 30;
-        static constexpr int MAX_OPEN_RETRY_COUNT = 30;
-        static constexpr int MAX_HOST_RESOLVE_RETRY_COUNT = 30;
-        static constexpr int MAX_CONNECT_RETRY_COUNT = 30;
+        static constexpr int MAX_WIFI_RETRY_COUNT = 15;
+        static constexpr int MAX_OPEN_RETRY_COUNT = 15;
+        static constexpr int MAX_HOST_RESOLVE_RETRY_COUNT = 15;
+        static constexpr int MAX_CONNECT_RETRY_COUNT = 15;
 
     public:
         Socket() : m_Net(NetworkInterface::get_default_instance()) {}
