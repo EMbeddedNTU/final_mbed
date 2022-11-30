@@ -29,7 +29,7 @@ target_sources(${APP_TARGET}
 
 target_precompile_headers(${APP_TARGET}
     PRIVATE
-        source/pch.h
+        source/core/pch.h
 )
 
 target_link_libraries(${APP_TARGET}
