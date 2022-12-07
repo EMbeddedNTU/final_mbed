@@ -9,19 +9,18 @@ namespace GSH {
     {
         if (!m_Net) 
         {
-            printf("Error! No network interface found.\r\n");
+            GSH_ERROR("Error! No network interface found.\r\n");
             return false;
         }
         return true;
     }
 
-    bool Socket::connect()
+    bool Socket::connect(const char* hostname, const int port)
     {
-        printf("Connecting to the network...\r\n");
-        
-        if (!wifi_connect()) 
+        nsapi_connection_status_t wifi_status = m_Wifi->get_connection_status();
+        if (wifi_status >= NSAPI_STATUS_DISCONNECTED)
         {
-            // TODO: logger
+            GSH_INFO("wifi status is %d", wifi_status);
             return false;
         }
 
@@ -33,30 +32,30 @@ namespace GSH {
             return false;
         }
 
-        if (!address_initialize())
+        if (!address_initialize(hostname, port))
         {
             // TODO: logger
             return false;
         }
-        
-        printf("Opening connection to remote port %d\r\n", REMOTE_PORT);
 
         if(!socket_connect())
         {
             // TODO: logger
             return false;
         };
+
+        GSH_INFO("Socket connected to %s %d", m_Hostname, m_Port);
         return true;
     }
 
     void Socket::wifi_scan() 
     {
-        WiFiInterface *wifi = m_Net->wifiInterface();
+        m_Wifi = m_Net->wifiInterface();
 
         WiFiAccessPoint ap[MAX_NUMBER_OF_ACCESS_POINTS];
 
         /* scan call returns number of access points found */
-        int result = wifi->scan(ap, MAX_NUMBER_OF_ACCESS_POINTS);
+        int result = m_Wifi->scan(ap, MAX_NUMBER_OF_ACCESS_POINTS);
 
         if (result <= 0) 
         {
@@ -78,24 +77,69 @@ namespace GSH {
         printf("\r\n");
     }
 
-
-    void Socket::send(char *json, int len) 
+    bool Socket::wifi_connect(const char* ssid, const char* password, nsapi_security security)
     {
-        nsapi_size_or_error_t result;
-        result = m_Socket->send(json, len);
-        while (0 >= result) 
+        int ret = m_Wifi->connect(ssid, password, security);
+        if (ret != 0) 
         {
-            GSH_ERROR("Error seding: %d\n", result);
-            socket_connect();
-            wait_us(5 * SECONDS);
-            result = m_Socket->send(json, len);
+            GSH_ERROR("WiFi connection error");
+            return false;
         }
+        GSH_INFO("WiFi connect successful");
+        return true;
     }
 
-    bool Socket::recv_http_response()
+    bool Socket::send(char *buffer, int len) 
     {
-        char buffer[MAX_MESSAGE_RECEIVED_LENGTH];
-        int remaining_bytes = MAX_MESSAGE_RECEIVED_LENGTH;
+        nsapi_size_t bytes_to_send = len;
+        nsapi_size_or_error_t bytes_sent = 0;
+        while (bytes_to_send) {
+            bytes_sent = m_Socket->send(buffer + bytes_sent, bytes_to_send);
+            if (bytes_sent < 0) {
+                GSH_ERROR("Error! m_Socket.send() returned: %d", bytes_sent);
+                return false;
+            } else {
+                GSH_INFO("sent %d bytes", bytes_sent);
+            }
+
+            bytes_to_send -= bytes_sent;
+        }
+        GSH_TRACE("Complete message sent");
+        return true;
+    }
+
+    bool Socket::send_http_request(const std::string& url)
+    {
+        /* loop until whole request sent */
+        const char buffer[] = "GET / HTTP/1.1\r\n"
+                              "Host: localhost:3000\r\n"
+                              "\r\n";
+
+        nsapi_size_t bytes_to_send = strlen(buffer);
+        nsapi_size_or_error_t bytes_sent = 0;
+
+        GSH_INFO("\r\nSending message: \r\n%s", buffer);
+
+        while (bytes_to_send) {
+            bytes_sent = m_Socket->send(buffer + bytes_sent, bytes_to_send);
+            if (bytes_sent < 0) {
+                GSH_ERROR("Error! m_Socket.send() returned: %d", bytes_sent);
+                return false;
+            } else {
+                GSH_INFO("sent %d bytes", bytes_sent);
+            }
+
+            bytes_to_send -= bytes_sent;
+        }
+
+        GSH_INFO("Complete message sent");
+
+        return true;
+    }
+
+    int Socket::recv_chunk(char* buffer, uint32_t length)
+    {
+        int remaining_bytes = length;
         int received_bytes = 0;
 
         /* loop until there is nothing received or we've ran out of buffer space */
@@ -106,21 +150,19 @@ namespace GSH {
             if (result < 0) 
             {
                 printf("Error! _socket.recv() returned: %d\r\n", result);
-                return false;
+                return -1;
             }
 
             received_bytes += result;
             remaining_bytes -= result;
         }
 
-        /* the message is likely larger but we only want the HTTP response code */
+        GSH_INFO("received %d bytes:\r\n%.*s\r\n\r\n", received_bytes, buffer + received_bytes - buffer, buffer);
 
-        GSH_INFO("received %d bytes:\r\n%.*s\r\n\r\n", received_bytes, strstr(buffer, "\n") - buffer, buffer);
-
-        return true;
+        return received_bytes;
     }
 
-    bool Socket::wifi_connect() 
+    bool Socket::wifi_connect_default() 
     {
         nsapi_size_or_error_t result;
         result = m_Net->connect();
@@ -173,10 +215,13 @@ namespace GSH {
         return true;
     }
 
-    bool Socket::address_initialize() 
+    bool Socket::address_initialize(const char* hostname, const int port) 
     {
+        m_Hostname = hostname;
+        m_Port = port;
+
         int retry_count = 0;
-        while (!resolve_hostname()) 
+        while (!resolve_hostname(m_Hostname)) 
         {
             if (retry_count > MAX_HOST_RESOLVE_RETRY_COUNT)
             {
@@ -186,24 +231,22 @@ namespace GSH {
             wait_us(SECONDS);
         }
 
-        m_Address->set_port(REMOTE_PORT);
+        m_Address->set_port(m_Port);
         return true;
     }
 
-    bool Socket::resolve_hostname() 
+    bool Socket::resolve_hostname(const char* hostname) 
     {
-        const char hostname[] = MBED_CONF_APP_HOSTNAME;
-
         /* get the host address */
-        printf("\nResolve hostname %s\r\n", hostname);
+        GSH_INFO("Resolve hostname %s", hostname);
         nsapi_size_or_error_t result = m_Net->gethostbyname(hostname, m_Address);
         if (result != 0)
         {
-            printf("Error! gethostbyname(%s) returned: %d\r\n", hostname, result);
+            GSH_ERROR("Error! gethostbyname(%s) returned: %d", hostname, result);
             return false;
         }
 
-        printf("%s address is %s\r\n", hostname,
+        GSH_INFO("%s address is %s\r\n", hostname,
             (m_Address->get_ip_address() ? m_Address->get_ip_address() : "None"));
 
         return true;
