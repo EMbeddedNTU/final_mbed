@@ -25,6 +25,8 @@
 	http://www.ietf.org/rfc/rfc2616.txt
 */
 
+#pragma once
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -36,7 +38,7 @@
 /*
 	Gets the offset of one string in another string
 */
-int str_index_of(const char *a, char *b)
+int str_index_of(const char *a, const char *b)
 {
 	char *offset = (char*)strstr(a, b);
 	return offset - a;
@@ -153,7 +155,7 @@ char *str_dup(const char *src)
 /*
  	Search and replace a string with another string , in a string
 */
-char *str_replace(char *search , char *replace , char *subject)
+char *str_replace(const char *search , const char *replace , char *subject)
 {
 	char  *p = NULL , *old = NULL , *new_subject = NULL ;
 	int c = 0 , search_size;
@@ -179,7 +181,7 @@ char *str_replace(char *search , char *replace , char *subject)
 /*
 	Get's all characters until '*until' has been found
 */
-char* get_until(char *haystack, char *until)
+char* get_until(char *haystack, const char *until)
 {
 	int offset = str_index_of(haystack, until);
 	return str_ndup(haystack, offset);

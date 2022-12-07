@@ -25,15 +25,12 @@ namespace GSH {
         HttpService(HttpService &other) = delete;
         void operator=(const HttpService &) = delete;
 
-        static HttpService* GetInstance();
-        bool init(const char* ssid, const char* password, nsapi_security security);
+        static HttpService& GetInstance();
+        bool init(const char* ssid, const char* password, nsapi_security security=NSAPI_SECURITY_WPA_WPA2);
 
         HttpResponse* http_request(char* http_headers, parsed_url* purl);
 
         HttpResponse* http_get(char *url, char *custom_headers);
-
-    private:
-        bool send_request(char* buffer);
 
     private:
         Socket m_Socket;

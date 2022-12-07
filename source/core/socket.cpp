@@ -12,6 +12,7 @@ namespace GSH {
             GSH_ERROR("Error! No network interface found.\r\n");
             return false;
         }
+        m_Wifi = m_Net->wifiInterface();
         return true;
     }
 
@@ -50,8 +51,6 @@ namespace GSH {
 
     void Socket::wifi_scan() 
     {
-        m_Wifi = m_Net->wifiInterface();
-
         WiFiAccessPoint ap[MAX_NUMBER_OF_ACCESS_POINTS];
 
         /* scan call returns number of access points found */
@@ -128,8 +127,11 @@ namespace GSH {
             remaining_bytes -= result;
         }
 
-        GSH_INFO("received %d bytes:\r\n%.*s\r\n\r\n", received_bytes, buffer + received_bytes - buffer, buffer);
-
+        if (received_bytes != 0)
+        {
+            GSH_INFO("received %d bytes:\r\n%.*s", received_bytes, buffer + received_bytes - buffer, buffer);
+        }
+        
         return received_bytes;
     }
 

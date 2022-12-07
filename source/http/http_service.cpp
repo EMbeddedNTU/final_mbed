@@ -2,13 +2,14 @@
 #include <cstdint>
 #include "http_service.h"
 #include "string_utils.h"
+#include <sstream>
 
 namespace GSH {
 
-    HttpService* HttpService::GetInstance()
+    HttpService& HttpService::GetInstance()
     {
         static HttpService s_HttpService;
-        return &s_HttpService;
+        return s_HttpService;
     }
 
     HttpService::HttpService()
@@ -18,7 +19,10 @@ namespace GSH {
 
     bool HttpService::init(const char* ssid, const char* password, nsapi_security security)
     {
+        GSH_INFO("init http service");
+
         m_Socket = Socket();
+
         if (!m_Socket.init()) 
         {
             GSH_INFO("Socket init failed");
@@ -27,6 +31,7 @@ namespace GSH {
     
         if (!m_Socket.wifi_connect(ssid, password, security))
         {
+            GSH_INFO("init http service");
             return false;
         }
 
@@ -61,8 +66,16 @@ namespace GSH {
 
         char buf[BUFSIZ+1];
 
+        // TODO
+        stringstream strValue;
+        strValue << purl->port;
+        unsigned int portNumber;
+        strValue >> portNumber;
+        GSH_INFO("port %d", portNumber);
+        m_Socket.connect(purl->host, portNumber);
+
         /* Send headers to server */
-        send_request(http_headers);
+        m_Socket.send(http_headers, strlen(http_headers));
 
         /* Recieve into response*/
         char *response = (char*)malloc(0);
@@ -122,7 +135,7 @@ namespace GSH {
     HttpService::HttpResponse* HttpService::http_get(char *url, char *custom_headers)
     {
         /* Parse url */
-        struct parsed_url *purl = parse_url(url);
+        struct parsed_url *purl = ParseUrlUtil::parse_url(url);
         if(purl == NULL)
         {
             printf("Unable to parse url");
@@ -194,37 +207,6 @@ namespace GSH {
         // /* Handle redirect */
         // return handle_redirect_get(hresp, custom_headers);
         return hresp;
-    }
-
-
-
-    bool HttpService::send_request(char* buffer)
-    {
-        /* loop until whole request sent */
-        // const char buffer[] = "GET / HTTP/1.1\r\n"
-        //                       "Host: localhost:3000\r\n"
-        //                       "\r\n";
-
-        nsapi_size_t bytes_to_send = strlen(buffer);
-        nsapi_size_or_error_t bytes_sent = 0;
-
-        GSH_INFO("\r\nSending message: \r\n%s", buffer);
-
-        while (bytes_to_send) {
-            bytes_sent = m_Socket.send(buffer + bytes_sent, bytes_to_send);
-            if (bytes_sent < 0) {
-                GSH_ERROR("Error! m_Socket.send() returned: %d", bytes_sent);
-                return false;
-            } else {
-                GSH_INFO("sent %d bytes", bytes_sent);
-            }
-
-            bytes_to_send -= bytes_sent;
-        }
-
-        GSH_INFO("Complete message sent");
-
-        return true;
     }
 
 }
