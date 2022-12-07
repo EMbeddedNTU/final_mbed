@@ -11,8 +11,8 @@ void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context) {
 }
 
 void gestureDetection(GSH::Gesture *gesture) {
-  gesture->init();
-  gesture->startDetect();
+    gesture->init();
+    gesture->startDetect();
 }
 
 void bleScan(BLEScanner *scanner) { scanner->scan(); }

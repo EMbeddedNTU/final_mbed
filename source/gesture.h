@@ -59,14 +59,22 @@ private:
       if (totalAcc[i] > accthreshold[i] * MAXPOINTS) {
         if (previous[i] == NEGATIVE && counter[i] <= 7) {
           GSH_INFO("%s\n", gesture[i * 2].c_str());
-          GSH_DEBUG("%c\n", _scanner.getNearestDevice());
+          char device = _scanner.getNearestDevice();
+          while (device == NULL) {
+            device = _scanner.getNearestDevice();
+          }
+          GSH_DEBUG("%c\n", device);
         }
         previous[i] = POSITIVE;
         counter[i] = 0;
       } else if (totalAcc[i] < -accthreshold[i] * MAXPOINTS) {
         if (previous[i] == POSITIVE && counter[i] <= 7) {
           GSH_INFO("%s\n", gesture[i * 2 + 1].c_str());
-          GSH_DEBUG("%c\n", _scanner.getNearestDevice());
+          char device = _scanner.getNearestDevice();
+          while (device == NULL) {
+            device = _scanner.getNearestDevice();
+          }
+          GSH_DEBUG("%c\n", device);
         }
         previous[i] = NEGATIVE;
         counter[i] = 0;
