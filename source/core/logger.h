@@ -1,7 +1,7 @@
 #ifndef __LOGGER_H__
 #define __LOGGER_H__
  
-#define NONE "\033[m"
+#define C_NONE "\033[m"
 #define RED "\033[0;32;31m"
 #define LIGHT_RED "\033[1;31m"
 #define GREEN "\033[0;32;32m"
@@ -20,39 +20,39 @@
 
 #include "mbed.h"
 #if defined LOG_LEVEL_TRACE
-#define GSH_TRACE(x, ...) std::printf("[TRACE: %s:%d]" NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
-#define GSH_DEBUG(x, ...) std::printf(BLUE "[DEBUG: %s:%d]" NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
-#define GSH_INFO(x, ...)  std::printf(GREEN "[INFO: %s:%d]" NONE x" \r\n", __FILE__, __LINE__, ##__VA_ARGS__)
-#define GSH_WARN(x, ...)  std::printf(YELLOW "[WARN: %s:%d]" NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
-#define GSH_ERROR(x, ...) std::printf(RED "[ERROR: %s:%d]" NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_TRACE(x, ...) std::printf("[TRACE: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_DEBUG(x, ...) std::printf(BLUE "[DEBUG: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_INFO(x, ...)  std::printf(GREEN "[INFO: %s:%d]" C_NONE x" \r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_WARN(x, ...)  std::printf(YELLOW "[WARN: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_ERROR(x, ...) std::printf(RED "[ERROR: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
  
 #elif defined LOG_LEVEL_DEBUG
 #define GSH_TRACE(x, ...)
-#define GSH_DEBUG(x, ...) std::printf(BLUE "[DEBUG: %s:%d]" NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
-#define GSH_INFO(x, ...)  std::printf(GREEN "[INFO: %s:%d]" NONE x" \r\n", __FILE__, __LINE__, ##__VA_ARGS__)
-#define GSH_WARN(x, ...)  std::printf(YELLOW "[WARN: %s:%d]" NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
-#define GSH_ERROR(x, ...) std::printf(RED "[ERROR: %s:%d]" NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_DEBUG(x, ...) std::printf(BLUE "[DEBUG: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_INFO(x, ...)  std::printf(GREEN "[INFO: %s:%d]" C_NONE x" \r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_WARN(x, ...)  std::printf(YELLOW "[WARN: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_ERROR(x, ...) std::printf(RED "[ERROR: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
  
 #elif defined LOG_LEVEL_INFO
 #define GSH_TRACE(x, ...)
 #define GSH_DEBUG(x, ...) 
-#define GSH_INFO(x, ...)  std::printf(GREEN "[INFO: %s:%d]" NONE x" \r\n", __FILE__, __LINE__, ##__VA_ARGS__)
-#define GSH_WARN(x, ...)  std::printf(YELLOW "[WARN: %s:%d]" NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
-#define GSH_ERROR(x, ...) std::printf(RED "[ERROR: %s:%d]" NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_INFO(x, ...)  std::printf(GREEN "[INFO: %s:%d]" C_NONE x" \r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_WARN(x, ...)  std::printf(YELLOW "[WARN: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_ERROR(x, ...) std::printf(RED "[ERROR: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
  
 #elif defined LOG_LEVEL_WARN
 #define GSH_TRACE(x, ...)
 #define GSH_DEBUG(x, ...)
 #define GSH_INFO(x, ...)
-#define GSH_WARN(x, ...)  std::printf(YELLOW "[WARN: %s:%d]" NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
-#define GSH_ERROR(x, ...) std::printf(RED "[ERROR: %s:%d]" NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_WARN(x, ...)  std::printf(YELLOW "[WARN: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_ERROR(x, ...) std::printf(RED "[ERROR: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
  
 #elif defined LOG_LEVEL_ERROR
 #define GSH_TRACE(x, ...)
 #define GSH_DEBUG(x, ...)
 #define GSH_INFO(x, ...)
 #define GSH_WARN(x, ...)
-#define GSH_ERROR(x, ...) std::printf(RED "[ERROR: %s:%d]" NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
+#define GSH_ERROR(x, ...) std::printf(RED "[ERROR: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)
  
 #else
 #define GSH_TRACE(x, ...)
