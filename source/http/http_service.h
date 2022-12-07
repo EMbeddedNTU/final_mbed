@@ -1,11 +1,11 @@
-// #include "core/socket.h"
+#include "core/socket.h"
 
-// namespace GSH {
+namespace GSH {
 
-//     class HttpService 
-//     {
-//     public:
+    class HttpService 
+    {
+    public:
 
-//     }
+    };
 
-// }
+}

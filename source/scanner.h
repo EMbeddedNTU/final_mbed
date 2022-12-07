@@ -1,3 +1,4 @@
+#include "core/pch.h"
 #include "ble/BLE.h"
 #include <cstdint>
 #include <cstdio>
@@ -40,22 +41,25 @@ private:
 
   void onAdvertisingReport(const ble::AdvertisingReportEvent &event) override {
     ble::AdvertisingDataParser adv_data(event.getPayload());
-    // ble::address_t address = event.getPeerAddress();
-    // ble::rssi_t rssi = event.getRssi();
+    ble::address_t address = event.getPeerAddress();
+    ble::rssi_t rssi = event.getRssi();
+    GSH_INFO("RSSI %d", rssi);
+    // GSH_INFO("");
     while (adv_data.hasNext()) {
       ble::AdvertisingDataParser::element_t field = adv_data.next();
     //   
-      printf("\n");
-printf("type %d\r\n", field.type);
+        printf("\n");
+        // printf("type %d\r\n", field.type);
 
-
+        if (field.type == ble::adv_data_type_t::COMPLETE_LOCAL_NAME)
+        {
             for (int i = 0; i < field.value.size(); i++)
             {
-                uint8_t* ptr = (uint8_t*)field.value.data();
-                printf("%d", *ptr);
+                char* ptr = (char*)field.value.data() + i;
+                printf("%c", *ptr);
             }
             printf("found\r\n");
-
+        }
 
       //       printf("%.*s", field.value.size(), field.value.data());
       //   }
