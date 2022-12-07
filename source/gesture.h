@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "scanner.h"
 #include "stm32l475e_iot01_accelero.h"
 #include "stm32l475e_iot01_gyro.h"
 #include <queue>
@@ -13,7 +14,7 @@ class Gesture {
   enum { NEGATIVE, ZERO, POSITIVE };
 
 public:
-  Gesture() {}
+  Gesture(BLEScanner &scanner) : _scanner(scanner) {}
 
   ~Gesture() {}
 
@@ -58,12 +59,14 @@ private:
       if (totalAcc[i] > accthreshold[i] * MAXPOINTS) {
         if (previous[i] == NEGATIVE && counter[i] <= 7) {
           GSH_INFO("%s\n", gesture[i * 2].c_str());
+          GSH_DEBUG("%c\n", _scanner.getNearestDevice());
         }
         previous[i] = POSITIVE;
         counter[i] = 0;
       } else if (totalAcc[i] < -accthreshold[i] * MAXPOINTS) {
         if (previous[i] == POSITIVE && counter[i] <= 7) {
           GSH_INFO("%s\n", gesture[i * 2 + 1].c_str());
+          GSH_DEBUG("%c\n", _scanner.getNearestDevice());
         }
         previous[i] = NEGATIVE;
         counter[i] = 0;
@@ -84,6 +87,7 @@ private:
   queue<float> gyro[3];
   int16_t totalAcc[3] = {0};
   float totalGyro[3] = {0};
+  BLEScanner &_scanner;
 };
 
 } // namespace GSH

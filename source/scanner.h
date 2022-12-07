@@ -1,5 +1,5 @@
-#include "core/pch.h"
 #include "ble/BLE.h"
+#include "core/pch.h"
 #include <cstdint>
 #include <cstdio>
 #include <events/mbed_events.h>
@@ -19,13 +19,22 @@ public:
   void scan() {
     _ble.gap().setEventHandler(this);
     _ble.init(this, &BLEScanner::on_init_complete);
+    _event_queue.call_every(5s, [this] { reset(); });
     _event_queue.dispatch_forever();
   }
+
+  char getNearestDevice() { return nearestDevice; }
 
 private:
   BLE &_ble;
   events::EventQueue &_event_queue;
   ble::rssi_t largestRssi = NULL;
+  char nearestDevice = NULL;
+
+  void reset() {
+    largestRssi = NULL;
+    nearestDevice = NULL;
+  }
 
   void on_init_complete(BLE::InitializationCompleteCallbackContext *params) {
     if (params->error != BLE_ERROR_NONE) {
@@ -43,31 +52,24 @@ private:
     ble::AdvertisingDataParser adv_data(event.getPayload());
     ble::address_t address = event.getPeerAddress();
     ble::rssi_t rssi = event.getRssi();
-    GSH_INFO("RSSI %d", rssi);
-    // GSH_INFO("");
     while (adv_data.hasNext()) {
       ble::AdvertisingDataParser::element_t field = adv_data.next();
-    //   
-        printf("\n");
-        // printf("type %d\r\n", field.type);
 
-        if (field.type == ble::adv_data_type_t::COMPLETE_LOCAL_NAME)
-        {
-            for (int i = 0; i < field.value.size(); i++)
-            {
-                char* ptr = (char*)field.value.data() + i;
-                printf("%c", *ptr);
-            }
-            printf("found\r\n");
+      if (field.type == ble::adv_data_type_t::COMPLETE_LOCAL_NAME) {
+
+        Span<const unsigned char, -1>::pointer device_name_ptr =
+            field.value.data();
+        if (device_name_ptr[0] == 'A' && device_name_ptr[1] == 'g' &&
+            device_name_ptr[2] == 'e' && device_name_ptr[3] == 'n' &&
+            device_name_ptr[4] == 't') {
+          if (largestRssi == NULL || rssi > largestRssi) {
+            largestRssi = rssi;
+            nearestDevice = device_name_ptr[5];
+            // printf("%c", device_name_ptr[5]);
+            // printf(" RSSI %d\n", rssi);
+          }
         }
-
-      //       printf("%.*s", field.value.size(), field.value.data());
-      //   }
+      }
     }
-
-    // printf("Received advertising data from address "
-    //        "%02x:%02x:%02x:%02x:%02x:%02x, RSSI: %ddBm\r\n",
-    //        address[5], address[4], address[3], address[2], address[1],
-    //        address[0], rssi);
   }
 };
