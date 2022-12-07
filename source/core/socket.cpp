@@ -108,35 +108,6 @@ namespace GSH {
         return true;
     }
 
-    bool Socket::send_http_request(const std::string& url)
-    {
-        /* loop until whole request sent */
-        const char buffer[] = "GET / HTTP/1.1\r\n"
-                              "Host: localhost:3000\r\n"
-                              "\r\n";
-
-        nsapi_size_t bytes_to_send = strlen(buffer);
-        nsapi_size_or_error_t bytes_sent = 0;
-
-        GSH_INFO("\r\nSending message: \r\n%s", buffer);
-
-        while (bytes_to_send) {
-            bytes_sent = m_Socket->send(buffer + bytes_sent, bytes_to_send);
-            if (bytes_sent < 0) {
-                GSH_ERROR("Error! m_Socket.send() returned: %d", bytes_sent);
-                return false;
-            } else {
-                GSH_INFO("sent %d bytes", bytes_sent);
-            }
-
-            bytes_to_send -= bytes_sent;
-        }
-
-        GSH_INFO("Complete message sent");
-
-        return true;
-    }
-
     int Socket::recv_chunk(char* buffer, uint32_t length)
     {
         int remaining_bytes = length;
@@ -149,7 +120,7 @@ namespace GSH {
             result = m_Socket->recv(buffer + received_bytes, remaining_bytes);
             if (result < 0) 
             {
-                printf("Error! _socket.recv() returned: %d\r\n", result);
+                GSH_ERROR("Error! _socket.recv() returned: %d\r\n", result);
                 return -1;
             }
 
@@ -282,4 +253,8 @@ namespace GSH {
         m_Socket = new TCPSocket();
     }
 
+    void Socket::close()
+    {
+        m_Socket->close();
+    }
 }

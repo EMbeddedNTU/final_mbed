@@ -24,10 +24,6 @@ void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context) {
 
 // int main() 
 // {     
-// #ifdef MBED_CONF_MBED_TRACE_ENABLE
-//     mbed_trace_init();
-// #endif
-
 //     GSH::Socket *socket = new GSH::Socket();
 //     MBED_ASSERT(socket);
 
@@ -54,19 +50,24 @@ void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context) {
 // }
 
 void gestureDetection(GSH::Gesture *gesture) {
-  gesture->init();
-  gesture->startDetect();
+    gesture->init();
+    gesture->startDetect();
 }
 
 void bleScan(BLEScanner *scanner) { scanner->scan(); }
 
 int main() {
-  GSH::Gesture *gesture = new GSH::Gesture();
 
-  BLE &ble = BLE::Instance();
-  ble.onEventsToProcess(schedule_ble_events);
-  BLEScanner scanner(ble, event_queue);
+#ifdef MBED_CONF_MBED_TRACE_ENABLE
+    mbed_trace_init();
+#endif
 
-  sensor.start(Callback<void()>(gestureDetection, gesture));
-  bleScanner.start(Callback<void()>(bleScan, &scanner));
+    GSH::Gesture *gesture = new GSH::Gesture();
+
+    BLE &ble = BLE::Instance();
+    ble.onEventsToProcess(schedule_ble_events);
+    BLEScanner scanner(ble, event_queue);
+
+    sensor.start(Callback<void()>(gestureDetection, gesture));
+    bleScanner.start(Callback<void()>(bleScan, &scanner));
 }

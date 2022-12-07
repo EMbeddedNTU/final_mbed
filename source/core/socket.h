@@ -1,3 +1,5 @@
+#pragma once
+
 #include "mbed.h"
 
 namespace GSH {
@@ -34,9 +36,9 @@ namespace GSH {
 
         bool send(char *buffer, int len);
 
-        bool send_http_request(const std::string& url);
-
         int recv_chunk(char* buffer, uint32_t length);
+
+        void close();
 
     private:
         void print_network_info();
