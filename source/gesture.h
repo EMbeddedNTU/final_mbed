@@ -2,6 +2,8 @@
 #include "scanner.h"
 #include "stm32l475e_iot01_accelero.h"
 #include "stm32l475e_iot01_gyro.h"
+#include <cstdio>
+#include <http_service.h>
 #include <queue>
 #include <string>
 
@@ -9,12 +11,19 @@ namespace GSH {
 
 class Gesture {
   static constexpr int MAXPOINTS = 10;
-  inline static string gesture[6] = {"LEFT",  "RIGHT", "BACK",
-                                     "FRONT", "DOWN",  "UP"};
+  enum GestureType {
+    left,
+    right,
+    backward,
+    forward,
+    down,
+    up,
+  };
   enum { NEGATIVE, ZERO, POSITIVE };
 
 public:
-  Gesture(BLEScanner &scanner) : _scanner(scanner) {}
+  Gesture(BLEScanner &scanner, GSH::HttpService &http_service)
+      : _scanner(scanner), _http_service(http_service) {}
 
   ~Gesture() {}
 
@@ -55,32 +64,50 @@ private:
   }
 
   void detection() {
+    char device = NULL;
+    int gesture = -1;
+    bool multiple = false;
     for (int i = 0; i < 3; i++) {
       if (totalAcc[i] > accthreshold[i] * MAXPOINTS) {
         if (previous[i] == NEGATIVE && counter[i] <= 7) {
-          GSH_INFO("%s\n", gesture[i * 2].c_str());
-          char device = _scanner.getNearestDevice();
+          if (gesture == -1) {
+            gesture = i * 2;
+          } else {
+            multiple = true;
+          }
+          device = _scanner.getNearestDevice();
           while (device == NULL) {
             device = _scanner.getNearestDevice();
           }
-          GSH_DEBUG("%c\n", device);
         }
         previous[i] = POSITIVE;
         counter[i] = 0;
       } else if (totalAcc[i] < -accthreshold[i] * MAXPOINTS) {
         if (previous[i] == POSITIVE && counter[i] <= 7) {
-          GSH_INFO("%s\n", gesture[i * 2 + 1].c_str());
-          char device = _scanner.getNearestDevice();
+          if (gesture == -1) {
+            gesture = i * 2 + 1;
+          } else {
+            multiple = true;
+          }
+          device = _scanner.getNearestDevice();
           while (device == NULL) {
             device = _scanner.getNearestDevice();
           }
-          GSH_DEBUG("%c\n", device);
         }
         previous[i] = NEGATIVE;
         counter[i] = 0;
       } else {
         counter[i]++;
       }
+    }
+    if (!multiple && gesture != -1) {
+      GSH_INFO("%d\n", gesture);
+      GSH_DEBUG("%c\n", device);
+      char msg[1024];
+      sprintf(msg, "{\"agentId\": %c,\"gesture\": %d}", device, gesture);
+
+      GSH::HttpService::HttpResponse *response = _http_service.http_post(
+          "http://192.168.0.101:3000/agent/gesture", NULL, msg);
     }
   }
 
@@ -96,6 +123,7 @@ private:
   int16_t totalAcc[3] = {0};
   float totalGyro[3] = {0};
   BLEScanner &_scanner;
+  GSH::HttpService &_http_service;
 };
 
 } // namespace GSH
