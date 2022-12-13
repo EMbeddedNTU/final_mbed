@@ -31,6 +31,7 @@ namespace GSH {
         HttpResponse* http_request(char* http_headers, parsed_url* purl);
 
         HttpResponse* http_get(char *url, char *custom_headers);
+        HttpResponse* http_post(char *url, char *custom_headers, char *post_data);
 
     private:
         Socket m_Socket;
