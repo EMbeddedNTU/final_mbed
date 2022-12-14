@@ -26,10 +26,12 @@ namespace GSH {
             SharedPtr<ParsedUrl> ptr(new ParsedUrl);
             if (!ptr->Parse(url))
             {
+                GSH_ERROR("Url can't be parsed");
                 return nullptr;
             }
             if(!ptr->isInitialized())
             {
+                GSH_ERROR("ParsedUrl object is not initialized");
                 return nullptr;
             }
             return ptr;

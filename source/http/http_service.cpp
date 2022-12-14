@@ -48,7 +48,7 @@ namespace GSH {
         if(!purl)
         {
             GSH_ERROR("Unable to parse url");
-            return NULL;
+            return nullptr;
         }
 
         /* Allocate memeory for htmlcontent */
@@ -71,7 +71,7 @@ namespace GSH {
         strValue << purl->port;
         unsigned int portNumber;
         strValue >> portNumber;
-        GSH_INFO("port %d", portNumber);
+        GSH_TRACE("port %d", portNumber);
         m_Socket.connect(purl->host, portNumber);
 
         /* Send headers to server */
@@ -138,8 +138,8 @@ namespace GSH {
         SharedPtr<ParsedUrl> purl = ParsedUrl::create(url);
         if(purl == nullptr)
         {
-            printf("Unable to parse url");
-            return NULL;
+            GSH_ERROR("Unable to parse url");
+            return nullptr;
         }
 
         /* Declare variable */
@@ -218,8 +218,8 @@ namespace GSH {
         SharedPtr<ParsedUrl> purl = ParsedUrl::create(url);
         if(purl == nullptr)
         {
-            printf("Unable to parse url");
-            return NULL;
+            GSH_ERROR("Unable to parse url");
+            return nullptr;
         }
 
         /* Declare variable */
