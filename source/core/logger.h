@@ -18,6 +18,11 @@
 #define LIGHT_GRAY "\033[0;37m"
 #define WHITE "\033[1;37m"
 
+
+
+#define LOG_LEVEL_TRACE
+
+
 #include "mbed.h"
 #if defined LOG_LEVEL_TRACE
 #define GSH_TRACE(x, ...) std::printf("[TRACE: %s:%d]" C_NONE x "\r\n", __FILE__, __LINE__, ##__VA_ARGS__)

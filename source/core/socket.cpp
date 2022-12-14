@@ -98,7 +98,7 @@ namespace GSH {
                 GSH_ERROR("Error! m_Socket.send() returned: %d", bytes_sent);
                 return false;
             } else {
-                GSH_INFO("sent %d bytes", bytes_sent);
+                GSH_TRACE("sent %d bytes", bytes_sent);
             }
 
             bytes_to_send -= bytes_sent;
@@ -129,7 +129,7 @@ namespace GSH {
 
         if (received_bytes != 0)
         {
-            GSH_INFO("received %d bytes:\r\n%.*s", received_bytes, buffer + received_bytes - buffer, buffer);
+            GSH_TRACE("received %d bytes:\r\n%.*s", received_bytes, buffer + received_bytes - buffer, buffer);
         }
         
         return received_bytes;

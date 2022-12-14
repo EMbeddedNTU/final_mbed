@@ -14,7 +14,7 @@ namespace GSH {
 
     HttpService::HttpService()
     {
-
+ 
     }
 
     bool HttpService::init(const char* ssid, const char* password, nsapi_security security)
@@ -25,13 +25,13 @@ namespace GSH {
 
         if (!m_Socket.init()) 
         {
-            GSH_INFO("Socket init failed");
+            GSH_WARN("Socket init failed");
             return false;
         }
     
         if (!m_Socket.wifi_connect(ssid, password, security))
         {
-            GSH_INFO("init http service");
+            GSH_WARN("wifi connect failed");
             return false;
         }
 
@@ -42,12 +42,12 @@ namespace GSH {
     /*
 	Makes a HTTP request and returns the response
     */
-    HttpService::HttpResponse* HttpService::http_request(char* http_headers, parsed_url* purl)
+    HttpService::HttpResponse* HttpService::http_request(char* http_headers, SharedPtr<ParsedUrl> purl)
     {
         /* Parse url */
-        if(purl == NULL)
+        if(!purl)
         {
-            printf("Unable to parse url");
+            GSH_ERROR("Unable to parse url");
             return NULL;
         }
 
@@ -55,7 +55,7 @@ namespace GSH {
         HttpResponse *hresp = (HttpResponse*)malloc(sizeof(struct HttpResponse));
         if(hresp == NULL)
         {
-            printf("Unable to allocate memory for htmlcontent.");
+            GSH_ERROR("Unable to allocate memory for htmlcontent.");
             return NULL;
         }
         hresp->body = NULL;
@@ -90,7 +90,7 @@ namespace GSH {
         if (recived_len < 0)
         {
             free(http_headers);
-            printf("Unabel to recieve");
+            GSH_WARN("Unabel to recieve");
             return NULL;
         }
 
@@ -132,11 +132,11 @@ namespace GSH {
     /*
         Makes a HTTP GET request to the given url
     */
-    HttpService::HttpResponse* HttpService::http_get(char *url, char *custom_headers)
+    HttpService::HttpResponse* HttpService::http_get(const char *url, char *custom_headers)
     {
         /* Parse url */
-        struct parsed_url *purl = ParseUrlUtil::parse_url(url);
-        if(purl == NULL)
+        SharedPtr<ParsedUrl> purl = ParsedUrl::create(url);
+        if(purl == nullptr)
         {
             printf("Unable to parse url");
             return NULL;
@@ -212,11 +212,11 @@ namespace GSH {
     /*
 	Makes a HTTP POST request to the given url
     */
-    HttpService::HttpResponse* HttpService::http_post(char *url, char *custom_headers, char *post_data)
+    HttpService::HttpResponse* HttpService::http_post(const char *url, char *custom_headers, char *post_data)
     {
         /* Parse url */
-        struct parsed_url *purl = ParseUrlUtil::parse_url(url);
-        if(purl == NULL)
+        SharedPtr<ParsedUrl> purl = ParsedUrl::create(url);
+        if(purl == nullptr)
         {
             printf("Unable to parse url");
             return NULL;
