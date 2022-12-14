@@ -10,16 +10,16 @@ namespace GSH {
     
     struct ParsedUrl 
     {
-        char *uri;					/* mandatory */
-        char *scheme;               /* mandatory */
-        char *host;                 /* mandatory */
-        char *ip; 					/* mandatory */
-        char *port;                 /* optional */
-        char *path;                 /* optional */
-        char *query;                /* optional */
-        char *fragment;             /* optional */
-        char *username;             /* optional */
-        char *password;             /* optional */
+        char* uri;					/* mandatory */
+        char* scheme;               /* mandatory */
+        char* host;                 /* mandatory */
+        char* ip; 					/* mandatory */
+        char* port;                 /* optional */
+        char* path;                 /* optional */
+        char* query;                /* optional */
+        char* fragment;             /* optional */
+        char* username;             /* optional */
+        char* password;             /* optional */
 
         static SharedPtr<ParsedUrl> create(const char *url)
         {
@@ -29,11 +29,11 @@ namespace GSH {
                 GSH_ERROR("Url can't be parsed");
                 return nullptr;
             }
-            if(!ptr->isInitialized())
-            {
-                GSH_ERROR("ParsedUrl object is not initialized");
-                return nullptr;
-            }
+            // if(!ptr->isInitialized())
+            // {
+            //     GSH_ERROR("ParsedUrl object is not initialized");
+            //     return nullptr;
+            // }
             return ptr;
         }
 
@@ -57,7 +57,7 @@ namespace GSH {
 
         bool isInitialized()
         {
-            return (uri != NULL) && (scheme != NULL) && (host != NULL) && (ip != NULL);
+            return (uri != nullptr) && (scheme != nullptr) && (host != nullptr) && (ip != nullptr);
         }
 
         bool Parse(const char *url)

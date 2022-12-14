@@ -13,6 +13,15 @@ namespace GSH {
             return false;
         }
         m_Wifi = m_Net->wifiInterface();
+
+        if (!socket_open())
+        {
+            GSH_ERROR("Socket open failed");
+            return false;
+        }
+
+        // m_Socket->set_blocking(false);
+
         return true;
     }
 
@@ -25,23 +34,15 @@ namespace GSH {
             return false;
         }
 
-        print_network_info();
-
-        if (!socket_open())
-        {
-            // TODO: logger
-            return false;
-        }
-
         if (!address_initialize(hostname, port))
         {
-            // TODO: logger
+            GSH_ERROR("Address initialize failed");
             return false;
         }
 
         if(!socket_connect())
         {
-            // TODO: logger
+            GSH_ERROR("Socket connect failed");
             return false;
         };
 
@@ -85,6 +86,9 @@ namespace GSH {
             return false;
         }
         GSH_INFO("WiFi connect successful");
+
+        print_network_info();
+
         return true;
     }
 
@@ -160,11 +164,11 @@ namespace GSH {
         /* print the network info */
         SocketAddress a;
         m_Net->get_ip_address(&a);
-        GSH_INFO("IP address: %s\r\n", a.get_ip_address() ? a.get_ip_address() : "None");
+        GSH_INFO("IP address: %s", a.get_ip_address() ? a.get_ip_address() : "None");
         m_Net->get_netmask(&a);
-        GSH_INFO("Netmask: %s\r\n", a.get_ip_address() ? a.get_ip_address() : "None");
+        GSH_INFO("Netmask: %s", a.get_ip_address() ? a.get_ip_address() : "None");
         m_Net->get_gateway(&a);
-        GSH_INFO("Gateway: %s\r\n", a.get_ip_address() ? a.get_ip_address() : "None");
+        GSH_INFO("Gateway: %s", a.get_ip_address() ? a.get_ip_address() : "None");
     }
 
     bool Socket::socket_open()
@@ -172,7 +176,7 @@ namespace GSH {
         nsapi_size_or_error_t result;
         result = m_Socket->open(m_Net);
         int retry_count = 0;
-        while (result != 0)
+        while (result != NSAPI_ERROR_OK)
         {
             if(retry_count > MAX_OPEN_RETRY_COUNT)
             {
@@ -180,10 +184,11 @@ namespace GSH {
                 return false;
             }
             retry_count++;
-            GSH_WARN("socket_open() returned: %d\r\n", result);
+            GSH_WARN("socket_open() returned: %d", result);
             socket_restart();
-            wait_us(5 * SECONDS);
             result = m_Socket->open(m_Net);
+            if (result == NSAPI_ERROR_OK) return true;
+            wait_us(5 * SECONDS);
         }
         return true;
     }
@@ -230,28 +235,43 @@ namespace GSH {
         nsapi_size_or_error_t result;
         result = m_Socket->connect(*m_Address);
         int retry_count = 0;
-        while (result != 0) 
+        while (result != NSAPI_ERROR_OK) 
         {
+            if (result == NSAPI_ERROR_IN_PROGRESS)
+            {
+                GSH_INFO("Socket is already connected");
+                return true;
+            }
+
             if (retry_count > MAX_CONNECT_RETRY_COUNT)
             {
-                // TODO: logger
+                GSH_WARN("socket_connect reach maximum retry count");
                 return false;
             }
             retry_count++;
-            GSH_WARN("socket_connect() returned: %d\r\n", result);
+
+            GSH_WARN("socket_connect() returned: %d, try open socket again", result);
             if(!socket_open()) 
             {
+                GSH_TRACE("Socket open failed after socket connect failed");
                 return false;
             }
-            wait_us(5 * SECONDS);
+
+            // Retry connect
             result = m_Socket->connect(*m_Address);
+            if (result == 0) break;
+
+            // Timeout
+            wait_us(5 * SECONDS);
         }
         return true;
     }
 
     void Socket::socket_restart() 
     {
+        GSH_WARN("Socket restart");
         m_Socket->close();
+        delete m_Socket;
         m_Socket = new TCPSocket();
     }
 

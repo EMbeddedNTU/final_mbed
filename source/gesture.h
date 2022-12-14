@@ -107,7 +107,9 @@ private:
       sprintf(msg, "{\"agentId\": %c,\"gesture\": %d}", device, gesture);
 
       GSH::HttpService::HttpResponse *response = _http_service.http_post(
-          "http://192.168.0.101:3000/agent/gesture", NULL, msg);
+          "http://192.168.0.106:3000/agent/gesture", NULL, msg);
+
+    //   GSH_ERROR("%s", response->body);
     }
   }
 

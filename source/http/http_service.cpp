@@ -35,6 +35,7 @@ namespace GSH {
             return false;
         }
 
+        GSH_INFO("init http service successful");
         return true;
     }
 
@@ -72,7 +73,13 @@ namespace GSH {
         unsigned int portNumber;
         strValue >> portNumber;
         GSH_TRACE("port %d", portNumber);
-        m_Socket.connect(purl->host, portNumber);
+
+        if (!m_Socket.connect(purl->host, portNumber))
+        {
+            free(hresp);
+            GSH_ERROR("Socket connect failed");
+            return nullptr;
+        }
 
         /* Send headers to server */
         m_Socket.send(http_headers, strlen(http_headers));
@@ -206,6 +213,7 @@ namespace GSH {
 
         // /* Handle redirect */
         // return handle_redirect_get(hresp, custom_headers);
+        GSH_TRACE("Http get response returned");
         return hresp;
     }
 
@@ -286,6 +294,8 @@ namespace GSH {
 
         /* Handle redirect */
         // return handle_redirect_post(hresp, custom_headers, post_data);
+
+        GSH_TRACE("Http post response returned");
         return hresp;
     }
 

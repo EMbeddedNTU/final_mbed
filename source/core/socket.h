@@ -22,6 +22,8 @@ namespace GSH {
             {
                 m_Net->disconnect();
             }
+            // delete m_Address;
+            // delete m_Socket;
         }
 
         bool init();

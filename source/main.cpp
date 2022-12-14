@@ -16,10 +16,16 @@ void schedule_ble_events(BLE::OnEventsToProcessCallbackContext *context) {
 
 void gestureDetection(GSH::Gesture *gesture) {
   gesture->init();
+  GSH_INFO("Start gesture detection");
   gesture->startDetect();
 }
 
-void bleScan(BLEScanner *scanner) { scanner->scan(); }
+void bleScan(BLEScanner *scanner) 
+{ 
+    GSH_INFO("Start BLE scan");
+    scanner->scan(); 
+    GSH_INFO("BLE scan finished");
+}
 
 int main() {
   http_service.init(WIFI_SSID, WIFI_KEY);
