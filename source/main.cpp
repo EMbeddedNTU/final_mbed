@@ -1,11 +1,12 @@
 #include "core/socket.h"
 #include "gesture.h"
+#include <cstdio>
 
 Thread sensor;
 Thread bleScanner;
 
-GSH::HttpService &http_service = GSH::HttpService::GetInstance();
 static EventQueue event_queue(16 * EVENTS_EVENT_SIZE);
+GSH::HttpService &http_service = GSH::HttpService::GetInstance();
 
 const static char WIFI_SSID[] = "509-2";
 const static char WIFI_KEY[] = "max30201";
@@ -20,11 +21,9 @@ void gestureDetection(GSH::Gesture *gesture) {
   gesture->startDetect();
 }
 
-void bleScan(BLEScanner *scanner) 
-{ 
-    GSH_INFO("Start BLE scan");
-    scanner->scan(); 
-    GSH_INFO("BLE scan finished");
+void bleScan(BLEScanner *scanner) {
+  GSH_INFO("Start BLE scan");
+  scanner->scan();
 }
 
 int main() {
@@ -34,7 +33,7 @@ int main() {
   ble.onEventsToProcess(schedule_ble_events);
   BLEScanner scanner(ble, event_queue);
 
-  GSH::Gesture *gesture = new GSH::Gesture(scanner, http_service);
+  GSH::Gesture *gesture = new GSH::Gesture(scanner, &http_service);
 
   sensor.start(callback(gestureDetection, gesture));
   bleScanner.start(Callback<void()>(bleScan, &scanner));

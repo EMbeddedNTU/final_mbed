@@ -65,8 +65,6 @@ private:
           if (largestRssi == NULL || rssi > largestRssi) {
             largestRssi = rssi;
             nearestDevice = device_name_ptr[5];
-            // printf("%c", device_name_ptr[5]);
-            // printf(" RSSI %d\n", rssi);
           }
         }
       }

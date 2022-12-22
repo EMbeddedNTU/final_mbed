@@ -27,13 +27,14 @@
 
 #pragma once
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
+// #include <stdio.h>
+// #include <string.h>
+// #include <stdlib.h>
+#include "mbed.h"
 
-#ifdef __cplusplus
-	#include <locale>
-#endif
+// #ifdef __cplusplus
+// 	#include <locale>
+// #endif
 
 
 namespace GSH {
@@ -136,12 +137,20 @@ namespace GSH {
     char *str_ndup (const char *str, size_t max)
     {
         size_t len = strnlen(str, max);
-        char *res = (char*)malloc (len + 1);
+
+        char *res = (char*)malloc(len + 1);
+        // printf("in str_ndup3 %x %x\n", str[0], str[1]);
+
+        // printf("length %d\n", len + 1);
+        // printf("addr of str %p\n", str);
+        // printf("addr of res %p\n", res);
         if (res)
         {
-            memcpy (res, str, len);
+            memcpy(res, str, len);
             res[len] = '\0';
         }
+        // printf("in str_ndup4 %x %x", str[0], str[1]);
+
         return res;
     }
 
@@ -185,9 +194,11 @@ namespace GSH {
     /*
         Get's all characters until '*until' has been found
     */
-    char* get_until(char *haystack, const char *until)
+    char* get_until(const char *haystack, const char *until)
     {
         int offset = str_index_of(haystack, until);
+        // printf("offset %d", offset);
+        // printf("in get until %x %x", haystack[0], haystack[1]);
         return str_ndup(haystack, offset);
     }
 

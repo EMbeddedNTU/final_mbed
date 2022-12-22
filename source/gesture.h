@@ -22,7 +22,7 @@ class Gesture {
   enum { NEGATIVE, ZERO, POSITIVE };
 
 public:
-  Gesture(BLEScanner &scanner, GSH::HttpService &http_service)
+  Gesture(BLEScanner &scanner, GSH::HttpService *http_service)
       : _scanner(scanner), _http_service(http_service) {}
 
   ~Gesture() {}
@@ -42,7 +42,6 @@ public:
         detection();
         totalAcc[2] += 10000;
       }
-      fflush(stdout);
       ThisThread::sleep_for(20ms);
     }
   }
@@ -64,8 +63,8 @@ private:
   }
 
   void detection() {
-    char device = NULL;
-    int gesture = -1;
+    device = NULL;
+    gesture = -1;
     bool multiple = false;
     for (int i = 0; i < 3; i++) {
       if (totalAcc[i] > accthreshold[i] * MAXPOINTS) {
@@ -101,16 +100,18 @@ private:
       }
     }
     if (!multiple && gesture != -1) {
-      GSH_INFO("%d\n", gesture);
-      GSH_DEBUG("%c\n", device);
-      char msg[1024];
-      sprintf(msg, "{\"agentId\": %c,\"gesture\": %d}", device, gesture);
-
-      GSH::HttpService::HttpResponse *response = _http_service.http_post(
-          "http://192.168.0.106:3000/agent/gesture", NULL, msg);
-
-    //   GSH_ERROR("%s", response->body);
+      send_gesture(gesture, device);
     }
+  }
+
+  void send_gesture(int gesture, char device) {
+    GSH_ERROR("gesture %d device %c", gesture, device);
+    char msg[1024];
+    sprintf(msg, "{\"agentId\": %c,\"gestureType\": %d}", device, gesture);
+
+    SharedPtr<GSH::HttpService::HttpResponse> response =
+        _http_service->http_post("http://192.168.0.101:3000/agent/gesture",
+                                 NULL, msg);
   }
 
 private:
@@ -124,8 +125,10 @@ private:
   queue<float> gyro[3];
   int16_t totalAcc[3] = {0};
   float totalGyro[3] = {0};
+  char device;
+  int gesture;
   BLEScanner &_scanner;
-  GSH::HttpService &_http_service;
+  GSH::HttpService *_http_service;
 };
 
 } // namespace GSH

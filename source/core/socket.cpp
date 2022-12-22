@@ -7,6 +7,8 @@ namespace GSH {
 
     bool Socket::init() 
     {
+        GSH_TRACE("Init socket");
+
         if (!m_Net) 
         {
             GSH_ERROR("Error! No network interface found.\r\n");
@@ -92,7 +94,7 @@ namespace GSH {
         return true;
     }
 
-    bool Socket::send(char *buffer, int len) 
+    bool Socket::send(const char *buffer, int len) 
     {
         nsapi_size_t bytes_to_send = len;
         nsapi_size_or_error_t bytes_sent = 0;
@@ -224,14 +226,21 @@ namespace GSH {
             return false;
         }
 
+        GSH_TRACE("%p", m_Address);
+
+        GSH_DEBUG("get ip address %s", m_Address->get_ip_address());
+
         GSH_INFO("%s address is %s\r\n", hostname,
             (m_Address->get_ip_address() ? m_Address->get_ip_address() : "None"));
 
+        GSH_DEBUG("address");
+        
         return true;
     }
 
     bool Socket::socket_connect() 
     {
+        GSH_DEBUG("socket connect");
         nsapi_size_or_error_t result;
         result = m_Socket->connect(*m_Address);
         int retry_count = 0;
